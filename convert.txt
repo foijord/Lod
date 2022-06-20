@@ -1,0 +1,1 @@
+toktx.exe --target_type RGBA --genmipmap fullres.ktx fullres.png

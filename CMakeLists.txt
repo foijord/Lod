@@ -27,6 +27,7 @@ find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 
 include_directories(
+	$ENV{VULKAN_SDK}/Source/Volk
 	${Boost_INCLUDE_DIRS}
 	${Vulkan_INCLUDE_DIRS}
 	${CMAKE_SOURCE_DIR}

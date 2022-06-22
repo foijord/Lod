@@ -24,6 +24,7 @@ endif(WIN32)
 
 find_package(Boost REQUIRED)
 find_package(Vulkan REQUIRED)
+find_package(Threads REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 
 include_directories(
@@ -35,48 +36,58 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/../gli/
 	${CMAKE_SOURCE_DIR}/../)
 
-link_directories(${Boost_LIBRARY_DIRS})
+link_directories(
+	$ENV{VULKAN_SDK}/Lib
+	${Boost_LIBRARY_DIRS}
+	${CMAKE_BINARY_DIR})
 
 set(TARGET Repl)
 
 add_executable(${TARGET}
 	Repl.cpp 
 	ShaderReload.h
-	../Innovator/Nodes.h
-	../Innovator/Window.h
-	../Innovator/Sensors.h
-	../Innovator/Visitor.h
-	../Innovator/GroupNodes.h
+	../Innovator/Innovator.h
+	../Innovator/Exceptions.h
 	../Innovator/GliTextureImage.h
+	../Innovator/GroupNodes.h
+	../Innovator/LruCache.h
+	../Innovator/Node.h
+	../Innovator/Nodes.h
+	../Innovator/Sensors.h
+	../Innovator/SparseImageMemory.h
+	../Innovator/State.h
+	../Innovator/Surface.h
+	../Innovator/Swapchain.h
+	../Innovator/TileKey.h
+	../Innovator/Timer.h
+	../Innovator/Visitor.h
+	../Innovator/VulkanBufferData.h
+	../Innovator/VulkanDevice.h
+	../Innovator/VulkanInstance.h
+	../Innovator/VulkanObjects.h
 	../Innovator/VulkanTextureImage.h
-	../Innovator/State.h)
+	../Innovator/Window.h
+	../Innovator/Worker.h)
 
 target_compile_definitions(${TARGET} PRIVATE
+	GLFW_INCLUDE_VULKAN
+	GLFW_INCLUDE_NONE
 	VK_NO_PROTOTYPES
 	VK_ENABLE_BETA_EXTENSIONS
 	GLM_FORCE_LEFT_HANDED
 	GLM_FORCE_DEPTH_ZERO_TO_ONE)
 
-if(WIN32)
-	set_target_properties(${TARGET} PROPERTIES
-		VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-	target_compile_definitions(${TARGET} PRIVATE
-		VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
-else()
-	target_compile_definitions(${TARGET} PRIVATE
-		VK_USE_PLATFORM_XCB_KHR)
-endif(WIN32)
+set_target_properties(${TARGET} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WIN32)
-	target_link_libraries(${TARGET}
-		glfw
-		$ENV{VULKAN_SDK}/Lib/shaderc_shared.lib
-)
+	target_compile_definitions(${TARGET} PRIVATE VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
 else()
-	target_link_libraries(${TARGET}
-		pthread
-		shaderc_shared
-		${CMAKE_DL_LIBS}
-		${Boost_LIBRARIES})
+	target_compile_definitions(${TARGET} PRIVATE VK_USE_PLATFORM_XCB_KHR)
 endif(WIN32)
+
+target_link_libraries(${TARGET}
+	${Boost_LIBRARIES}
+	glfw
+	Threads::Threads
+	shaderc_shared
+	${CMAKE_DL_LIBS})
